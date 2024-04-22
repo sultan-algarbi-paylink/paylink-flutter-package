@@ -46,23 +46,31 @@ class _MyHomePageState extends State<MyHomePage> {
       bottomNavigationBar: GestureDetector(
         onTap: () {
           setState(() => errorMessage = null);
-          PaylinkPayment(
-            context: context,
-            isTestMode: true,
-            webViewTitle: 'Payment Screen',
-          ).openPaymentForm(
-            transactionNo: '1713690519134',
-            onPaymentComplete: onPaymentComplete,
-            onError: onErrorPayment,
-          );
+          openPayment(context);
         },
         child: const MyCheckoutContent(),
       ),
     );
   }
 
+  void openPayment(BuildContext context) {
+    PaylinkPayment(
+      context: context,
+      isTestMode: true,
+      apiId: null, // required for production environment
+      secretKey: null, // required for production environment
+      webViewTitle: 'Payment Screen', // optional
+      textColor: Colors.white, // optional
+      themeColor: Colors.blue, // optional
+    ).openPaymentForm(
+      transactionNo: '1713690519134',
+      onPaymentComplete: onPaymentComplete,
+      onError: onErrorPayment,
+    );
+  }
+
   /// -- Required function to handle the payment completion
-  onPaymentComplete(Map<String, dynamic> orderDetails) {
+  void onPaymentComplete(Map<String, dynamic> orderDetails) {
     setState(() {
       double? amount = orderDetails['amount'];
       String? orderStatus = orderDetails['orderStatus'];
@@ -71,7 +79,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   /// -- Required function to handle the payment error
-  onErrorPayment(Object error) {
+  void onErrorPayment(Object error) {
     setState(() => errorMessage = error.toString());
   }
 }
