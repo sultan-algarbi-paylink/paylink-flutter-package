@@ -1,38 +1,30 @@
-### [0.9.2] - 2024-01-10
+## 1.0.1
 
-#### Added
+- Enhanced package documentation for better clarity and usability.
 
-- New payment verification feature.
+## 1.0.0
 
-#### Fixed
+- Corrected a bug related to callback URL parameters.
+- Improved the design of the webview widget for a more user-friendly interface.
+- Added the ability to customize webview colors according to user preferences.
+- Implemented robust error handlers to handle various scenarios effectively.
+- Enhanced error messages for better understanding and troubleshooting.
 
-- Bug in transaction handling.
+## 0.9.4
 
-### [0.9.2] - 2024-01-01
+- Optimized API Link and Payment Frame URLs based on the project's environment.
+- Incorporated Payment Token for secure and authorized transactions.
+- Ensured proper usage of Transaction Number and Order Number for accurate processing.
 
-#### Added
+## 0.9.3
 
-- Initial release of Paylink Payment SDK.
+- Introduced a callback function to enhance the payment functionality.
 
-### [0.9.3] - 2024-01-08
+## 0.9.2
 
-#### Added
+- Added a new payment verification feature to ensure transaction integrity.
+- Resolved a bug related to transaction handling for smoother operations.
 
-- Added callback function to payment function.
+## 0.9.1
 
-### [0.9.4] - 2024-03-06
-
-#### Added
-
-- API Link & Payment Frame Url based on project environment.
-- Payment token for authorization
-
-#### Fixed
-
-- Using Transaction Number & Order Number properly.
-
-### [1.0.0] - 2024-04-21
-
-#### Upgrade
-
-- Reimplement the whole SDK
+- Released the initial version of the Paylink Payment SDK with essential features.
