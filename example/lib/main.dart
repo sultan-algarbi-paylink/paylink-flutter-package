@@ -1,5 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:paylink_payment_sdk/paylink_payment_sdk.dart';
+
+// Example widgets
+import 'package:paylink_payment_example/widgets/appbar.dart';
+import 'package:paylink_payment_example/widgets/body_content.dart';
+import 'package:paylink_payment_example/widgets/checkout_child.dart';
+
+// Paylink Payment Package
+import 'package:paylink_payment/paylink_payment.dart';
 
 void main() {
   runApp(const MyApp());
@@ -8,40 +15,18 @@ void main() {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // Try running your application with "flutter run". You'll see the
-        // application has a blue toolbar. Then, without quitting the app, try
-        // changing the primarySwatch below to Colors.green and then invoke
-        // "hot reload" (press "r" in the console where you ran "flutter run",
-        // or simply save your changes to "hot reload" in a Flutter IDE).
-        // Notice that the counter didn't reset back to zero; the application
-        // is not restarted.
-        primarySwatch: Colors.blue,
-      ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      title: 'Payment Demo',
+      theme: ThemeData(primarySwatch: Colors.blue),
+      home: const MyHomePage(title: 'Payment Demo Home Page'),
     );
   }
 }
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
   final String title;
 
   @override
@@ -49,58 +34,52 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  String? errorMessage;
+
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
     return Scaffold(
-      appBar: AppBar(
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
-      ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Invoke "debug painting" (press "p" in the console, choose the
-          // "Toggle Debug Paint" action from the Flutter Inspector in Android
-          // Studio, or the "Toggle Debug Paint" command in Visual Studio Code)
-          // to see the wireframe for each widget.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: const <Widget>[
-            Text(
-              'Paylink Payment Example',
-            )
-          ],
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          PaymentSDK(context).openPaymentForm(
-            '1704667110670',
-            (orderNumber, transactionNo, orderPaid, orderTotal) {
+      appBar: const MyAppBar(),
+      body: MyCartContent(errorMessage: errorMessage),
 
-            },
-          );
+      /// -- Paylink Example
+      bottomNavigationBar: GestureDetector(
+        onTap: () {
+          setState(() => errorMessage = null);
+          openPayment(context);
         },
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
+        child: const MyCheckoutContent(),
+      ),
     );
+  }
+
+  void openPayment(BuildContext context) {
+    PaylinkPayment(
+      context: context,
+      isTestMode: true,
+      apiId: null, // required for production environment
+      secretKey: null, // required for production environment
+      webViewTitle: 'Payment Screen', // optional
+      textColor: Colors.white, // optional
+      themeColor: Colors.blue, // optional
+    ).openPaymentForm(
+      transactionNo: '1713690519134',
+      onPaymentComplete: onPaymentComplete,
+      onError: onErrorPayment,
+    );
+  }
+
+  /// -- Required function to handle the payment completion
+  void onPaymentComplete(Map<String, dynamic> orderDetails) {
+    setState(() {
+      double? amount = orderDetails['amount'];
+      String? orderStatus = orderDetails['orderStatus'];
+      errorMessage = 'Order Amount: $amount, order Status: $orderStatus';
+    });
+  }
+
+  /// -- Required function to handle the payment error
+  void onErrorPayment(Object error) {
+    setState(() => errorMessage = error.toString());
   }
 }
