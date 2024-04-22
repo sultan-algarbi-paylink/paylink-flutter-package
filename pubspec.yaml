@@ -1,5 +1,5 @@
 name: paylink_payment
-description: "A Flutter Package designed to simplify the integration of Paylink's payment gateway into Flutter applications. It provides a streamlined way to handle payments within your Flutter app."
+description: A Flutter Package designed to simplify the integration of Paylink's payment gateway into Flutter applications. It provides a streamlined way to handle payments within your Flutter app.
 version: 1.0.0
 homepage: https://paylink.sa
 documentation: https://developer.paylink.sa/
@@ -25,11 +25,3 @@ dev_dependencies:
   flutter_lints: ^3.0.0
 
 flutter:
-
-platforms:
-  android:
-  ios:
-  linux:
-  macos:
-  web:
-  windows:

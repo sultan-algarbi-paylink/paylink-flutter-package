@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
 // Example widgets
-import 'package:example/widgets/appbar.dart';
-import 'package:example/widgets/body_content.dart';
-import 'package:example/widgets/checkout_child.dart';
+import 'package:paylink_payment_example/widgets/appbar.dart';
+import 'package:paylink_payment_example/widgets/body_content.dart';
+import 'package:paylink_payment_example/widgets/checkout_child.dart';
 
 // Paylink Payment Package
 import 'package:paylink_payment/paylink_payment.dart';
