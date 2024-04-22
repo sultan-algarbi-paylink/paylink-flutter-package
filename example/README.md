@@ -38,7 +38,12 @@ class MyApp extends StatelessWidget {
         body: Center(
           child: ElevatedButton(
             onPressed: () {
-              PaymentSDK(context).openPaymentForm('your_order_number');
+              PaymentSDK(context,
+                      environment: 'testing', paymentToken: 'your-token')
+                  .openPaymentForm(
+                'your_transaction_number',
+                (transactionNo, orderNumber, orderPaid, orderTotal) {},
+              );
             },
             child: Text('Start Payment'),
           ),
@@ -47,3 +52,4 @@ class MyApp extends StatelessWidget {
     );
   }
 }
+```

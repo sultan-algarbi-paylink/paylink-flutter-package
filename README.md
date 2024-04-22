@@ -20,4 +20,5 @@ To use the `paylink_payment_sdk` in your Flutter project, add it to your depende
 dependencies:
   flutter:
     sdk: flutter
-  paylink_payment_sdk: ^0.9.3  # Use the latest version
+  paylink_payment_sdk: ^0.9.4 # Use the latest version
+```
