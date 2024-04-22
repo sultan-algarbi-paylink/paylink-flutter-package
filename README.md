@@ -1,8 +1,8 @@
-# Paylink Payment SDK
+# Paylink Payment Package
 
 ## Overview
 
-`paylink_payment_sdk` is a Flutter SDK designed to simplify the integration of Paylink's payment gateway into Flutter applications. It provides a streamlined way to handle payments within your Flutter app.
+`paylink_payment` is a Flutter Package designed to simplify the integration of Paylink's payment gateway into Flutter applications. It provides a streamlined way to handle payments within your Flutter app.
 
 ## Features
 
@@ -14,11 +14,11 @@
 
 ### Installation
 
-To use the `paylink_payment_sdk` in your Flutter project, add it to your dependencies in your `pubspec.yaml` file:
+To use the `paylink_payment` in your Flutter project, add it to your dependencies in your `pubspec.yaml` file:
 
 ```yaml
 dependencies:
   flutter:
     sdk: flutter
-  paylink_payment_sdk: ^0.9.4 # Use the latest version
+  paylink_payment: ^0.9.4 # Use the latest version
 ```

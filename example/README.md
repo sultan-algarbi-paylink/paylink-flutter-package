@@ -1,22 +1,22 @@
-# Paylink Payment SDK Example
+# Paylink Payment Package Example
 
 ## Overview
 
-This example demonstrates how to integrate and use the `paylink_payment_sdk` in a Flutter application. It showcases a simple implementation of the payment process using the SDK.
+This example demonstrates how to integrate and use the `paylink_payment` in a Flutter application. It showcases a simple implementation of the payment process using the Package.
 
 ## Getting Started
 
 To run this example:
 
-1. Clone the `paylink_payment_sdk` repository.
+1. Clone the `paylink_payment` repository.
 2. Navigate to the `example` directory.
 3. Run `flutter pub get` to fetch the necessary dependencies.
 4. Run `flutter run` to start the example app on a connected device or emulator.
 
 ## Features Demonstrated
 
-- **Initialization**: How to initialize the `paylink_payment_sdk` in your Flutter app.
-- **Payment Processing**: How to process payments using the `paylink_payment_sdk`.
+- **Initialization**: How to initialize the `paylink_payment` in your Flutter app.
+- **Payment Processing**: How to process payments using the `paylink_payment`.
 - **Handling Responses**: How to handle the different responses from the payment gateway.
 
 ## Example Code
@@ -25,7 +25,7 @@ Here's a quick snippet from the example:
 
 ```dart
 import 'package:flutter/material.dart';
-import 'package:paylink_payment_sdk/paylink_payment_sdk.dart';
+import 'package:paylink_payment/paylink_payment.dart';
 
 void main() => runApp(MyApp());
 

@@ -27,4 +27,4 @@
 
 ## 0.9.1
 
-- Released the initial version of the Paylink Payment SDK with essential features.
+- Released the initial version of the Paylink Payment Package with essential features.

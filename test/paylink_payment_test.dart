@@ -6,7 +6,7 @@ import 'package:paylink_payment/paylink_payment.dart';
 
 void main() {
   testWidgets(
-    'Paylink Payment SDK openPaymentForm Test',
+    'Paylink Payment Package openPaymentForm Test',
     (WidgetTester tester) async {
       // Build our app and trigger a frame.
       await tester.pumpWidget(
