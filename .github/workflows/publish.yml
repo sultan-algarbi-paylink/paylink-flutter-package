@@ -20,7 +20,7 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
-      - name: Publish package
+      - name: Publish package --dry-run
         run: flutter pub publish --dry-run
 
       - name: Publish package
