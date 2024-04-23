@@ -24,4 +24,4 @@ jobs:
         run: flutter pub publish --dry-run
 
       - name: Publish package
-        run: echo "y" | flutter pub publish
+        run: flutter pub publish --force
