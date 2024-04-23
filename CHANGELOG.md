@@ -1,5 +1,8 @@
+## 1.0.3
+- Improve the GitHub Action.
+
 ## 1.0.2
-- Update the package description
+- Update the package description.
 
 ## 1.0.1
 
