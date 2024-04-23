@@ -20,7 +20,7 @@ To integrate Paylink's payment gateway into your Flutter application using the `
 
    ```yaml
    dependencies:
-     paylink_payment: ^1.0.1 # Use the latest version
+     paylink_payment: ^1.0.2 # Use the latest version
    ```
 
 2. **Import the Package**:

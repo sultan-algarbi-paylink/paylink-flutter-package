@@ -1,3 +1,6 @@
+## 1.0.2
+- Update the package description
+
 ## 1.0.1
 
 - Enhanced package documentation for better clarity and usability.
