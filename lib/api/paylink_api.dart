@@ -1,6 +1,8 @@
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
+import 'package:paylink_payment/paylink_payment.dart';
+
 /// A class to interact with the Paylink API.
 abstract class PaylinkAPI {
   /// Indicates whether the API is in test mode.
@@ -19,6 +21,17 @@ abstract class PaylinkAPI {
   final String testingApiId = 'APP_ID_1123453311';
   final String testingSecretKey = '0662abb5-13c7-38ab-cd12-236e58f43766';
 
+  /// All payment methods are accepted by Paylink
+  static const List<String> validCardBrands = [
+    'mada',
+    'visaMastercard',
+    'amex',
+    'tabby',
+    'tamara',
+    'stcpay',
+    'urpay'
+  ];
+
   /// Initializes the PaylinkAPI with optional test mode, API ID, and secret key.
   /// [isTestMode] - Indicates whether the API is in test mode.
   /// [apiId] - Production API ID.
@@ -28,7 +41,7 @@ abstract class PaylinkAPI {
     this.apiId,
     this.secretKey,
   }) {
-    // Set API endpoints based on test mode.
+    /// Set API endpoints based on test mode.
     apiLink = isTestMode
         ? 'https://restpilot.paylink.sa'
         : 'https://restapi.paylink.sa';
@@ -74,6 +87,91 @@ abstract class PaylinkAPI {
     }
   }
 
+  /// Add invoice to Paylink.
+  ///
+  /// [amount] - The total amount of the invoice. NOTE: Buyer will pay this amount regardless of the total amounts of the products' prices.
+  /// [clientMobile] - The mobile number of the client.
+  /// [clientName] - The name of the client.
+  /// [orderNumber] - A unique identifier for the invoice.
+  /// [products] - An array of PaylinkProduct objects to be included in the invoice.
+  /// [callBackUrl] - Call back URL that will be called by the Paylink to the merchant system. This callback URL will receive two parameters: orderNumber, and transactionNo.
+  /// [cancelUrl] - Call back URL to cancel orders that will be called by the Paylink to the merchant system. This callback URL will receive two parameters: orderNumber, and transactionNo.
+  /// [clientEmail] - The email address of the client.
+  /// [currency] - The currency code of the invoice. The default value is SAR. (e.g., USD, EUR, GBP).
+  /// [note] - A note for the invoice.
+  /// [smsMessage] - This option will enable the invoice to be sent to the client's mobile specified in clientMobile.
+  /// [supportedCardBrands] - List of supported card brands. This list is optional. values are: [mada, visaMastercard, amex, tabby, tamara, stcpay, urpay]
+  /// [displayPending] - This option will make this invoice displayed in my.paylink.sa
+  ///
+  /// Returns a map containing invoice details.
+  Future<Map<String, dynamic>> addInvoice({
+    required double amount,
+    required String clientMobile,
+    required String clientName,
+    required String orderNumber,
+    required List<PaylinkProduct> products,
+    required String callBackUrl,
+    String? cancelUrl,
+    String? clientEmail,
+    String? currency,
+    String? note,
+    String? smsMessage,
+    List<String> supportedCardBrands = validCardBrands,
+    bool displayPending = true,
+  }) async {
+    try {
+      if (paymentToken == null) await authenticate();
+
+      // Filter and sanitize supportedCardBrands
+      List<String> filteredCardBrands = supportedCardBrands
+          .where((brand) => validCardBrands.contains(brand))
+          .toList();
+
+      // Convert PaylinkProduct objects to maps
+      List<Map<String, dynamic>> productsArray = [];
+      if (products.isNotEmpty) {
+        for (var product in products) {
+          productsArray.add(product.toMap());
+        }
+      }
+
+      // Request body parameters
+      Map<String, dynamic> requestBody = {
+        'amount': amount,
+        'callBackUrl': callBackUrl,
+        'cancelUrl': cancelUrl,
+        'clientEmail': clientEmail,
+        'clientMobile': clientMobile,
+        'currency': currency,
+        'clientName': clientName,
+        'note': note,
+        'orderNumber': orderNumber,
+        'products': productsArray,
+        'smsMessage': smsMessage,
+        'supportedCardBrands': filteredCardBrands,
+        'displayPending': displayPending,
+      };
+
+      final response = await http.post(
+        Uri.parse('$apiLink/api/addInvoice'),
+        headers: {
+          'accept': '*/*',
+          'content-type': 'application/json',
+          'Authorization': 'Bearer $paymentToken',
+        },
+        body: jsonEncode(requestBody),
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception('Failed to add the invoice: ${response.body}');
+      }
+
+      return json.decode(response.body);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
   /// Retrieves invoice details from the Paylink API.
   /// [transactionNo] - The transaction number for which to retrieve invoice details.
   /// Returns a map containing invoice details.
@@ -99,6 +197,48 @@ abstract class PaylinkAPI {
       }
 
       return json.decode(response.body);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// Cancel invoice from Paylink.
+  /// [transactionNo] - The transaction number of the invoice to cancel.
+  /// Returns boolean
+  Future<bool> cancelInvoice(String? transactionNo) async {
+    try {
+      if (transactionNo == null) {
+        throw ArgumentError('Transaction number cannot be null.');
+      }
+
+      if (paymentToken == null) await authenticate();
+
+      // Request body parameters
+      Map<String, dynamic> requestBody = {
+        'transactionNo': transactionNo,
+      };
+
+      final response = await http.post(
+        Uri.parse('$apiLink/api/cancelInvoice'),
+        headers: {
+          'accept': '*/*',
+          'content-type': 'application/json',
+          'Authorization': 'Bearer $paymentToken',
+        },
+        body: jsonEncode(requestBody),
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception('Failed to cancel the invoice: ${response.body}');
+      }
+
+      Map<String, dynamic> responseBody = json.decode(response.body);
+
+      if (responseBody.isEmpty || responseBody['success'] != 'true') {
+        throw Exception('Failed to cancel the invoice: ${response.body}');
+      }
+
+      return true;
     } catch (e) {
       rethrow;
     }
