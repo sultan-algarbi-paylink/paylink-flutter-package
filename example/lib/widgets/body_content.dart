@@ -61,10 +61,10 @@ class CartItems extends StatelessWidget {
 class MyCartContent extends StatelessWidget {
   const MyCartContent({
     super.key,
-    required this.errorMessage,
+    required this.paymentResponseMessage,
   });
 
-  final String? errorMessage;
+  final String? paymentResponseMessage;
 
   @override
   Widget build(BuildContext context) {
@@ -72,12 +72,12 @@ class MyCartContent extends StatelessWidget {
       children: [
         const Expanded(child: CartItems()),
         const SizedBox(height: 20),
-        if (errorMessage != null)
+        if (paymentResponseMessage != null)
           Container(
             color: Colors.amber,
             padding: const EdgeInsets.all(10.0),
             child: Text(
-              errorMessage!,
+              paymentResponseMessage!,
               style: const TextStyle(
                 fontSize: 16.0,
                 fontWeight: FontWeight.bold,

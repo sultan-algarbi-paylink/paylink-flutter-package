@@ -34,18 +34,18 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  String? errorMessage;
+  String? paymentResponseMessage;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: const MyAppBar(),
-      body: MyCartContent(errorMessage: errorMessage),
+      body: MyCartContent(paymentResponseMessage: paymentResponseMessage),
 
       /// -- Paylink Example
       bottomNavigationBar: GestureDetector(
         onTap: () {
-          setState(() => errorMessage = null);
+          setState(() => paymentResponseMessage = null);
           openPayment(context);
         },
         child: const MyCheckoutContent(),
@@ -74,12 +74,13 @@ class _MyHomePageState extends State<MyHomePage> {
     setState(() {
       double? amount = orderDetails['amount'];
       String? orderStatus = orderDetails['orderStatus'];
-      errorMessage = 'Order Amount: $amount, order Status: $orderStatus';
+      paymentResponseMessage =
+          'Order Amount: $amount, order Status: $orderStatus';
     });
   }
 
   /// -- Required function to handle the payment error
   void onErrorPayment(Object error) {
-    setState(() => errorMessage = error.toString());
+    setState(() => paymentResponseMessage = error.toString());
   }
 }
