@@ -4,6 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:paylink_payment/api/paylink_api.dart';
 import 'package:paylink_payment/widgets/payment_webview.dart';
 
+// export PaylinkProduct class
+export 'package:paylink_payment/models/paylink_product.dart';
+
 /// A class for handling payments using PaylinkAPI.
 class PaylinkPayment extends PaylinkAPI {
   /// The [BuildContext] for the payment.

@@ -1,17 +1,36 @@
+import 'package:paylink_payment/assets/constants.dart';
+
 abstract class PaylinkHelper {
   /// API endpoints for production and test environments.
   late String paymentFrameUrl;
 
-  /// All payment methods are accepted by Paylink
-  static const List<String> validCardBrands = [
-    'mada',
-    'visaMastercard',
-    'amex',
-    'tabby',
-    'tamara',
-    'stcpay',
-    'urpay'
-  ];
+  String getApiLink(bool isTesting) {
+    return isTesting
+        ? PaylinkConstants.testApiLink
+        : PaylinkConstants.productionApiLink;
+  }
+
+  String getPaymentFrameUrl(bool isTesting) {
+    return isTesting
+        ? PaylinkConstants.testingPaymentFrameUrl
+        : PaylinkConstants.productionPaymentFrameUrl;
+  }
+
+  String? getApiId(String? productionApiId, bool isTesting) {
+    return isTesting ? PaylinkConstants.testingApiId : productionApiId;
+  }
+
+  String? getSecretKey(String? productionSecretKey, bool isTesting) {
+    return isTesting ? PaylinkConstants.testingSecretKey : productionSecretKey;
+  }
+
+  List<String> filterCardBrands(List<String>? supportedCardBrands) {
+    return supportedCardBrands == null
+        ? PaylinkConstants.validCardBrands
+        : supportedCardBrands
+            .where((brand) => PaylinkConstants.validCardBrands.contains(brand))
+            .toList();
+  }
 
   /// Generates the payment page URL for a transaction.
   /// [transactionNo] - The transaction number for which to generate the payment URL.
