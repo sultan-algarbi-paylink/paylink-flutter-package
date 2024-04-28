@@ -2,14 +2,11 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 /// Paylink files
-import 'package:paylink_payment/paylink_payment.dart';
-import 'package:paylink_payment/api/paylink_helpers.dart';
+import 'package:paylink_payment/assets/helpers.dart';
+import 'package:paylink_payment/models/paylink_product.dart';
 
 /// A class to interact with the Paylink API.
 abstract class PaylinkAPI extends PaylinkHelper {
-  /// Indicates whether the API is in test mode.
-  final bool isTestMode;
-
   /// Production API credentials.
   final String? apiId, secretKey;
 
@@ -19,11 +16,11 @@ abstract class PaylinkAPI extends PaylinkHelper {
   /// Payment token obtained after authentication.
   late String? paymentToken;
 
-  /// Testing API credentials.
-  final String testingApiId = 'APP_ID_1123453311';
-  final String testingSecretKey = '0662abb5-13c7-38ab-cd12-236e58f43766';
+  /// Indicates whether the API is in test mode.
+  final bool isTestMode;
 
   /// Initializes the PaylinkAPI with optional test mode, API ID, and secret key.
+  ///
   /// [isTestMode] - Indicates whether the API is in test mode.
   /// [apiId] - Production API ID.
   /// [secretKey] - Production API secret key.
@@ -33,14 +30,10 @@ abstract class PaylinkAPI extends PaylinkHelper {
     this.secretKey,
   }) {
     /// Set API endpoints based on test mode.
-    apiLink = isTestMode
-        ? 'https://restpilot.paylink.sa'
-        : 'https://restapi.paylink.sa';
-    super.paymentFrameUrl = isTestMode
-        ? 'https://paymentpilot.paylink.sa/pay/frame'
-        : 'https://payment.paylink.sa/pay/frame';
+    apiLink = getApiLink(isTestMode);
+    super.paymentFrameUrl = getPaymentFrameUrl(isTestMode);
 
-    // Initialize payment token.
+    /// Initialize payment token.
     paymentToken = null;
   }
 
@@ -55,8 +48,8 @@ abstract class PaylinkAPI extends PaylinkHelper {
           'content-type': 'application/json',
         },
         body: json.encode({
-          'apiId': isTestMode ? testingApiId : apiId,
-          'secretKey': isTestMode ? testingSecretKey : secretKey,
+          'apiId': getApiId(apiId, isTestMode),
+          'secretKey': getSecretKey(secretKey, isTestMode),
           'persistToken': false,
         }),
       );
@@ -71,7 +64,7 @@ abstract class PaylinkAPI extends PaylinkHelper {
       final token = jsonResponse['id_token'] as String?;
       if (token == null) throw Exception('Token not found in the response.');
 
-      // Set the payment token
+      /// Set the payment token
       paymentToken = token;
     } catch (e) {
       rethrow;
@@ -83,12 +76,12 @@ abstract class PaylinkAPI extends PaylinkHelper {
   /// [amount] - The total amount of the invoice. NOTE: Buyer will pay this amount regardless of the total amounts of the products' prices.
   /// [clientMobile] - The mobile number of the client.
   /// [clientName] - The name of the client.
+  /// [clientEmail] - The email address of the client.
   /// [orderNumber] - A unique identifier for the invoice.
-  /// [products] - An array of PaylinkProduct objects to be included in the invoice.
   /// [callBackUrl] - Call back URL that will be called by the Paylink to the merchant system. This callback URL will receive two parameters: orderNumber, and transactionNo.
   /// [cancelUrl] - Call back URL to cancel orders that will be called by the Paylink to the merchant system. This callback URL will receive two parameters: orderNumber, and transactionNo.
-  /// [clientEmail] - The email address of the client.
   /// [currency] - The currency code of the invoice. The default value is SAR. (e.g., USD, EUR, GBP).
+  /// [products] - An array of PaylinkProduct objects to be included in the invoice.
   /// [note] - A note for the invoice.
   /// [smsMessage] - This option will enable the invoice to be sent to the client's mobile specified in clientMobile.
   /// [supportedCardBrands] - List of supported card brands. This list is optional. values are: [mada, visaMastercard, amex, tabby, tamara, stcpay, urpay]
@@ -99,26 +92,24 @@ abstract class PaylinkAPI extends PaylinkHelper {
     required double amount,
     required String clientMobile,
     required String clientName,
+    String? clientEmail,
     required String orderNumber,
-    required List<PaylinkProduct> products,
     required String callBackUrl,
     String? cancelUrl,
-    String? clientEmail,
     String? currency,
+    required List<PaylinkProduct> products,
     String? note,
     String? smsMessage,
-    List<String> supportedCardBrands = PaylinkHelper.validCardBrands,
+    List<String>? supportedCardBrands,
     bool displayPending = true,
   }) async {
     try {
       if (paymentToken == null) await _authenticate();
 
-      // Filter and sanitize supportedCardBrands
-      List<String> filteredCardBrands = supportedCardBrands
-          .where((brand) => PaylinkHelper.validCardBrands.contains(brand))
-          .toList();
+      /// Filter and sanitize supportedCardBrands
+      List<String> filteredCardBrands = filterCardBrands(supportedCardBrands);
 
-      // Convert PaylinkProduct objects to maps
+      /// Convert PaylinkProduct objects to maps
       List<Map<String, dynamic>> productsArray = [];
       if (products.isNotEmpty) {
         for (var product in products) {
@@ -126,7 +117,7 @@ abstract class PaylinkAPI extends PaylinkHelper {
         }
       }
 
-      // Request body parameters
+      /// Request body parameters
       Map<String, dynamic> requestBody = {
         'amount': amount,
         'callBackUrl': callBackUrl,
@@ -157,7 +148,10 @@ abstract class PaylinkAPI extends PaylinkHelper {
         throw Exception('Failed to add the invoice: ${response.body}');
       }
 
-      return json.decode(response.body);
+      /// Decode the order details
+      Map<String, dynamic> orderDetails = json.decode(response.body);
+
+      return orderDetails;
     } catch (e) {
       rethrow;
     }
@@ -189,7 +183,10 @@ abstract class PaylinkAPI extends PaylinkHelper {
         throw Exception('Failed to load order details: ${response.body}');
       }
 
-      return json.decode(response.body);
+      /// Decode the order details
+      Map<String, dynamic> orderDetails = json.decode(response.body);
+
+      return orderDetails;
     } catch (e) {
       rethrow;
     }
@@ -200,7 +197,7 @@ abstract class PaylinkAPI extends PaylinkHelper {
   /// [transactionNo] - The transaction number of the invoice to cancel.
   ///
   /// Returns boolean
-  Future<bool> cancelInvoice(String? transactionNo) async {
+  Future<void> cancelInvoice(String? transactionNo) async {
     try {
       if (transactionNo == null) {
         throw ArgumentError('Transaction number cannot be null.');
@@ -208,7 +205,7 @@ abstract class PaylinkAPI extends PaylinkHelper {
 
       if (paymentToken == null) await _authenticate();
 
-      // Request body parameters
+      /// Request body parameters
       Map<String, dynamic> requestBody = {
         'transactionNo': transactionNo,
       };
@@ -232,8 +229,6 @@ abstract class PaylinkAPI extends PaylinkHelper {
       if (responseBody.isEmpty || responseBody['success'] != 'true') {
         throw Exception('Failed to cancel the invoice: ${response.body}');
       }
-
-      return true;
     } catch (e) {
       rethrow;
     }
