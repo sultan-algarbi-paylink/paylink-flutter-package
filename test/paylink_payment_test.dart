@@ -19,6 +19,8 @@ void main() {
                     PaylinkPayment(
                       context: context,
                       isTestMode: true,
+                      apiId: null,
+                      secretKey: null,
                       webViewTitle: 'Payment Webview',
                     ).openPaymentForm(
                       transactionNo: '1713170798626',

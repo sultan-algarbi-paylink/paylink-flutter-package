@@ -1,10 +1,12 @@
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
+/// Paylink files
 import 'package:paylink_payment/paylink_payment.dart';
+import 'package:paylink_payment/api/paylink_helpers.dart';
 
 /// A class to interact with the Paylink API.
-abstract class PaylinkAPI {
+abstract class PaylinkAPI extends PaylinkHelper {
   /// Indicates whether the API is in test mode.
   final bool isTestMode;
 
@@ -12,7 +14,7 @@ abstract class PaylinkAPI {
   final String? apiId, secretKey;
 
   /// API endpoints for production and test environments.
-  late String apiLink, paymentFrameUrl;
+  late String apiLink;
 
   /// Payment token obtained after authentication.
   late String? paymentToken;
@@ -20,17 +22,6 @@ abstract class PaylinkAPI {
   /// Testing API credentials.
   final String testingApiId = 'APP_ID_1123453311';
   final String testingSecretKey = '0662abb5-13c7-38ab-cd12-236e58f43766';
-
-  /// All payment methods are accepted by Paylink
-  static const List<String> validCardBrands = [
-    'mada',
-    'visaMastercard',
-    'amex',
-    'tabby',
-    'tamara',
-    'stcpay',
-    'urpay'
-  ];
 
   /// Initializes the PaylinkAPI with optional test mode, API ID, and secret key.
   /// [isTestMode] - Indicates whether the API is in test mode.
@@ -45,7 +36,7 @@ abstract class PaylinkAPI {
     apiLink = isTestMode
         ? 'https://restpilot.paylink.sa'
         : 'https://restapi.paylink.sa';
-    paymentFrameUrl = isTestMode
+    super.paymentFrameUrl = isTestMode
         ? 'https://paymentpilot.paylink.sa/pay/frame'
         : 'https://payment.paylink.sa/pay/frame';
 
@@ -55,7 +46,7 @@ abstract class PaylinkAPI {
 
   /// Authenticates with the Paylink API to obtain a payment token.
   /// This method sends a POST request to the API's authentication endpoint.
-  Future<void> authenticate() async {
+  Future<void> _authenticate() async {
     try {
       final response = await http.post(
         Uri.parse('$apiLink/api/auth'),
@@ -116,15 +107,15 @@ abstract class PaylinkAPI {
     String? currency,
     String? note,
     String? smsMessage,
-    List<String> supportedCardBrands = validCardBrands,
+    List<String> supportedCardBrands = PaylinkHelper.validCardBrands,
     bool displayPending = true,
   }) async {
     try {
-      if (paymentToken == null) await authenticate();
+      if (paymentToken == null) await _authenticate();
 
       // Filter and sanitize supportedCardBrands
       List<String> filteredCardBrands = supportedCardBrands
-          .where((brand) => validCardBrands.contains(brand))
+          .where((brand) => PaylinkHelper.validCardBrands.contains(brand))
           .toList();
 
       // Convert PaylinkProduct objects to maps
@@ -173,7 +164,9 @@ abstract class PaylinkAPI {
   }
 
   /// Retrieves invoice details from the Paylink API.
+  ///
   /// [transactionNo] - The transaction number for which to retrieve invoice details.
+  ///
   /// Returns a map containing invoice details.
   Future<Map<String, dynamic>> getInvoice(String? transactionNo) async {
     try {
@@ -181,7 +174,7 @@ abstract class PaylinkAPI {
         throw ArgumentError('Transaction number cannot be null.');
       }
 
-      if (paymentToken == null) await authenticate();
+      if (paymentToken == null) await _authenticate();
 
       final response = await http.get(
         Uri.parse('$apiLink/api/getInvoice/$transactionNo'),
@@ -203,7 +196,9 @@ abstract class PaylinkAPI {
   }
 
   /// Cancel invoice from Paylink.
+  ///
   /// [transactionNo] - The transaction number of the invoice to cancel.
+  ///
   /// Returns boolean
   Future<bool> cancelInvoice(String? transactionNo) async {
     try {
@@ -211,7 +206,7 @@ abstract class PaylinkAPI {
         throw ArgumentError('Transaction number cannot be null.');
       }
 
-      if (paymentToken == null) await authenticate();
+      if (paymentToken == null) await _authenticate();
 
       // Request body parameters
       Map<String, dynamic> requestBody = {
@@ -241,42 +236,6 @@ abstract class PaylinkAPI {
       return true;
     } catch (e) {
       rethrow;
-    }
-  }
-
-  /// Generates the payment page URL for a transaction.
-  /// [transactionNo] - The transaction number for which to generate the payment URL.
-  /// [clientName] - The name of the client making the payment.
-  /// [clientMobile] - The mobile number of the client making the payment.
-  /// Returns the payment page URL.
-  String getPaymentPageUrl(
-    String? transactionNo,
-    String? clientName,
-    String? clientMobile,
-  ) {
-    // Encode the strings to make it safe for literal use as a URI component.
-    clientName = Uri.encodeComponent(clientName ?? '');
-    clientMobile = Uri.encodeComponent(clientMobile ?? '');
-
-    return '$paymentFrameUrl/$transactionNo?n=$clientName&m=$clientMobile';
-  }
-
-  /// Converts payment error data to a map format.
-  /// [data] - The payment error data to be converted.
-  /// Returns a map containing the converted payment errors.
-  Map<String, dynamic> paymentErrorsToMap(data) {
-    if (data == null) return {};
-
-    // Check if data is actually a list
-    if (data is List<dynamic>) {
-      Map<String, dynamic> convertedMap = {};
-      for (var item in data) {
-        if (item is Map<String, dynamic>) convertedMap.addAll(item);
-      }
-      return convertedMap;
-    } else {
-      // Handle the case where data is not as expected
-      throw const FormatException('Data is not in the expected format');
     }
   }
 }

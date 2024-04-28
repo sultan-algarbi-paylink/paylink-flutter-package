@@ -24,8 +24,8 @@ class PaylinkPayment extends PaylinkAPI {
   /// [themeColor] - The theme color for the payment web view.
   PaylinkPayment({
     super.isTestMode,
-    super.apiId,
-    super.secretKey,
+    required super.apiId,
+    required super.secretKey,
     required this.context,
     this.webViewTitle = 'Payment',
     this.textColor = Colors.white,
