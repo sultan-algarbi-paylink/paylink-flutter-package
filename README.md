@@ -9,69 +9,124 @@
 - Easy integration with Paylink payment gateway.
 - Simplified payment process with minimal code.
 - Secure handling of payment transactions.
+- The ability to checkout an invoice.
+- The ability to create a new invoice.
+- The ability to cancel invoice.
+- The ability to retrieve invoice details.
 
 ## Usage
 
 To integrate Paylink's payment gateway into your Flutter application using the `paylink_payment` package, follow these steps:
 
-1. **Install the Package**:
+1.  **Install the Package**:
 
-   Add `paylink_payment` to your `pubspec.yaml` file under dependencies:
+    Add `paylink_payment` to your `pubspec.yaml` file under dependencies:
 
-   ```yaml
-   dependencies:
-     paylink_payment: ^1.0.3 # Use the latest version
-   ```
+    ```yaml
+    dependencies:
+      paylink_payment: ^1.0.4 # Use the latest version
+    ```
 
-2. **Import the Package**:
+2.  **Import the Package**:
 
-   Import the `paylink_payment` package in your Dart file:
+    Import the `paylink_payment` package in your Dart file:
 
-   ```dart
-   import 'package:paylink_payment/paylink_payment.dart';
-   ```
+    ```dart
+    import 'package:paylink_payment/paylink_payment.dart';
+    ```
 
-3. **Open Payment Form**:
+3.  **Initialize Paylink instance**
 
-   Use the `PaylinkPayment` class to open the payment form when a button or action is triggered. Here's an example of how to do this:
+    ```dart
+    paylink = PaylinkPayment(
+      context: context,
+      isTestMode: true,
+      apiId: null, // required for production environment
+      secretKey: null, // required for production environment
+      webViewTitle: 'Payment Screen', // optional
+      textColor: Colors.white, // optional
+      themeColor: Colors.blue, // optional
+    )
+    ```
 
-   ```dart
-   void openPayment(BuildContext context) {
-     PaylinkPayment(
-       context: context,
-       isTestMode: true,
-       apiId: null, // required for production environment
-       secretKey: null, // required for production environment
-       webViewTitle: 'Payment Screen', // optional
-       textColor: Colors.white, // optional
-       themeColor: Colors.blue, // optional
-     ).openPaymentForm(
-       transactionNo: '1713690519134',
-       onPaymentComplete: (Map<String, dynamic> orderDetails) {
-         /// Handle payment completion
-       },
-       onError: (Object error) {
-         /// Handle payment error
-       },
-     );
-   }
-   ```
+    - Replace the placeholders (`apiId`, `secretKey`, etc.) with actual values required for the production environment.
 
-   Replace the placeholders (`apiId`, `secretKey`, etc.) with actual values required for the production environment.
+## Package Functionalities
 
-4. **Handle Payment Completion and Errors**:
+### 1. **Open Payment Form**:
 
-   Implement the `onPaymentComplete` and `onError` callbacks to handle the payment completion and any errors that occur during the payment process.
+Use the `PaylinkPayment` class to open the payment form when a button or action is triggered. Here's an example of how to do this:
 
-   ```dart
-   onPaymentComplete: (Map<String, dynamic> orderDetails) {
-     /// Handle payment completion
-   },
-   onError: (Object error) {
-     /// Handle payment error
-   },
-   ```
+```dart
+// paylink instance initialized in previous step
+paylink.openPaymentForm(
+  transactionNo: '1713690519134',
+  onPaymentComplete: (Map<String, dynamic> orderDetails) {
+    /// Handle payment completion
+  },
+  onError: (Object error) {
+    /// Handle payment error
+  },
+);
+```
 
-   Customize these callbacks based on your app's requirements.
+- Implement the `onPaymentComplete` and `onError` callbacks to handle the payment completion and any errors that occur during the payment process. Customize these callbacks based on your app's requirements.
+
+### 2. **Add Invoice**:
+
+```dart
+paylink.addInvoice(
+  amount: 220.0,
+  clientMobile: '0512345678',
+  clientName: 'Mohammed',
+  orderNumber: '123456789',
+  callBackUrl: 'https://example.com',
+  products: [
+    PaylinkProduct(title: 'Book', price: 100, qty: 2),
+    PaylinkProduct(title: 'Pen', price: 2, qty: 10),
+  ],
+  cancelUrl: 'https://example.com',
+  clientEmail: 'mohammed@test.com',
+  currency: 'SAR',
+  displayPending: true,
+  note: 'Test invoice',
+  smsMessage: 'URL: [SHORT_URL], Amount: [AMOUNT]',
+  supportedCardBrands: ['mada', 'visaMastercard', 'amex', 'tabby', 'tamara', 'stcpay', 'urpay'],
+)
+.then((orderDetails) {
+  /// Handle success response
+})
+.onError((error, stackTrace) {
+  /// Handle error response
+});
+```
+
+### 3. **Retrieve Invoice Details**:
+
+```dart
+paylink.getInvoice(
+  transactionNo: '1713690519134'
+)
+.then((orderDetails) {
+  /// Handle success response
+})
+.onError((error, stackTrace) {
+  /// Handle error response
+});
+```
+
+### 4. **Cancel Invoice**:
+
+```dart
+paylink.cancelInvoice(
+  transactionNo: '1713690519134'
+)
+.then((_) {
+  /// Handle success response
+})
+.onError((error, stackTrace) {
+  /// Handle error response
+});
+```
 
 By following these steps, you can easily integrate Paylink's payment gateway into your Flutter application using the `paylink_payment` package.

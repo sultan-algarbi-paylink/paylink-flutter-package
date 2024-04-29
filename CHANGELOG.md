@@ -1,3 +1,8 @@
+## 1.0.4
+- Added invoice creation functionality.
+- Implemented cancel invoice feature.
+- Added ability to retrieve invoice details.
+
 ## 1.0.3
 - Improve the GitHub Action.
 
