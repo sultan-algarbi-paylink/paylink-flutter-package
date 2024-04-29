@@ -162,7 +162,7 @@ abstract class PaylinkAPI extends PaylinkHelper {
   /// [transactionNo] - The transaction number for which to retrieve invoice details.
   ///
   /// Returns a map containing invoice details.
-  Future<Map<String, dynamic>> getInvoice(String? transactionNo) async {
+  Future<Map<String, dynamic>> getInvoice({String? transactionNo}) async {
     try {
       if (transactionNo == null) {
         throw ArgumentError('Transaction number cannot be null.');
@@ -197,7 +197,7 @@ abstract class PaylinkAPI extends PaylinkHelper {
   /// [transactionNo] - The transaction number of the invoice to cancel.
   ///
   /// Returns boolean
-  Future<void> cancelInvoice(String? transactionNo) async {
+  Future<void> cancelInvoice({String? transactionNo}) async {
     try {
       if (transactionNo == null) {
         throw ArgumentError('Transaction number cannot be null.');

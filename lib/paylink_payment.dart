@@ -49,7 +49,7 @@ class PaylinkPayment extends PaylinkAPI {
   }) async {
     try {
       // Fetch order details from the API
-      var orderDetails = await getInvoice(transactionNo);
+      var orderDetails = await getInvoice(transactionNo: transactionNo);
 
       // Extract gateway order request from order details
       Map<String, dynamic>? gatewayOrderRequest =
@@ -146,7 +146,7 @@ class PaylinkPayment extends PaylinkAPI {
       }
 
       // Fetch order details using the transaction number
-      var orderDetails = await getInvoice(transactionNo);
+      var orderDetails = await getInvoice(transactionNo: transactionNo);
 
       // Extract order amount and order status from order details
       String? orderStatus = orderDetails['orderStatus'];
