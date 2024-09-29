@@ -1,12 +1,47 @@
+## 2.0.0
+
+- **Improved Authentication Workflow**
+
+  - Authentication now occurs only when necessary, ensuring the token is refreshed when `idToken` is null, reducing unnecessary API calls.
+
+- **Enhanced Invoice Management**
+
+  - **Optional Parameters Handling**: Parameters like `clientEmail`, `cancelUrl`, and `supportedCardBrands` are now handled more gracefully, ensuring better flexibility.
+  - **Brand Filtering**: `supportedCardBrands` are filtered to include only valid entries as per `PaylinkConstants.validCardBrands`.
+  - **Product Mapping**: `PaylinkProduct` objects are now converted into a structured map for better API integration.
+
+- **Advanced Error Handling**
+
+  - Enhanced error extraction from API responses, providing more detailed error messages.
+  - The `_handleResponseError` method now includes the HTTP status code in the error message, making debugging easier.
+
+- **Flutter Webview Integration**
+
+  - **New `openPaymentForm` Method**: Streamlined payment handling with clear callbacks for payment success (`onPaymentComplete`) and error handling (`onError`).
+  - **Improved `_showWebView` Method**: Modularized the webview logic for displaying the payment form, improving clarity and maintainability.
+  - **Callback Management**: The `handleCallbackReached` method refines the process of payment completion by handling callback parameters and validating the transaction status.
+
+- **Factory Constructors for Test & Production Environments**
+
+  - Simplified environment setup with dedicated factory constructors:
+    - `PaylinkAPI.test` and `PaylinkAPI.production`
+    - `PaylinkPayment.test` and `PaylinkPayment.production`
+
+- **Code Refactoring**
+  - Refactored code for better modularity and reusability, particularly in the `PaylinkPayment` class, reducing redundancy and improving readability.
+
 ## 1.0.4
+
 - Added invoice creation functionality.
 - Implemented cancel invoice feature.
 - Added ability to retrieve invoice details.
 
 ## 1.0.3
+
 - Improve the GitHub Action.
 
 ## 1.0.2
+
 - Update the package description.
 
 ## 1.0.1

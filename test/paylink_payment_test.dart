@@ -16,11 +16,8 @@ void main() {
               builder: (BuildContext context) {
                 return ElevatedButton(
                   onPressed: () {
-                    PaylinkPayment(
+                    PaylinkPayment.test(
                       context: context,
-                      isTestMode: true,
-                      apiId: null,
-                      secretKey: null,
                       webViewTitle: 'Payment Webview',
                     ).openPaymentForm(
                       transactionNo: '1713170798626',
@@ -46,9 +43,9 @@ void main() {
   );
 }
 
-onPaymentComplete(Map<String, dynamic> orderDetails) {
-  print('==================== Order Amount: ${orderDetails['amount']}');
-  print('==================== order Status: ${orderDetails['orderStatus']}');
+onPaymentComplete(PaylinkInvoice orderDetails) {
+  print('==================== Order Amount: ${orderDetails.amount}');
+  print('==================== order Status: ${orderDetails.orderStatus}');
 }
 
 onErrorPayment(Object error) {

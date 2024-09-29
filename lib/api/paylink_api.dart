@@ -2,93 +2,98 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 /// Paylink files
-import 'package:paylink_payment/assets/helpers.dart';
+import 'package:paylink_payment/assets/constants.dart';
 import 'package:paylink_payment/models/paylink_product.dart';
+import 'package:paylink_payment/models/paylink_invoice.dart';
 
 /// A class to interact with the Paylink API.
-abstract class PaylinkAPI extends PaylinkHelper {
-  /// Production API credentials.
-  final String? apiId, secretKey;
+class PaylinkAPI {
+  /// Properties
+  final String apiId;
+  final String secretKey;
+  final bool persistToken = false;
+  final String apiBaseUrl;
+  final String paymentFrameUrl;
+  late String? idToken;
 
-  /// API endpoints for production and test environments.
-  late String apiLink;
-
-  /// Payment token obtained after authentication.
-  late String? paymentToken;
-
-  /// Indicates whether the API is in test mode.
-  final bool isTestMode;
-
-  /// Initializes the PaylinkAPI with optional test mode, API ID, and secret key.
-  ///
-  /// [isTestMode] - Indicates whether the API is in test mode.
-  /// [apiId] - Production API ID.
-  /// [secretKey] - Production API secret key.
   PaylinkAPI({
-    this.isTestMode = false,
-    this.apiId,
-    this.secretKey,
-  }) {
-    /// Set API endpoints based on test mode.
-    apiLink = getApiLink(isTestMode);
-    super.paymentFrameUrl = getPaymentFrameUrl(isTestMode);
+    required this.apiId,
+    required this.secretKey,
+    required this.apiBaseUrl,
+    required this.paymentFrameUrl,
+  });
 
-    /// Initialize payment token.
-    paymentToken = null;
+  /// Private constructor
+  PaylinkAPI._internal({
+    required this.apiId,
+    required this.secretKey,
+    required this.apiBaseUrl,
+    required this.paymentFrameUrl,
+  }) {
+    idToken = null;
   }
 
-  /// Authenticates with the Paylink API to obtain a payment token.
-  /// This method sends a POST request to the API's authentication endpoint.
+  /// Test constructor
+  factory PaylinkAPI.test() {
+    return PaylinkAPI._internal(
+      apiId: PaylinkConstants.testingApiId,
+      secretKey: PaylinkConstants.testingSecretKey,
+      apiBaseUrl: PaylinkConstants.testApiBaseUrl,
+      paymentFrameUrl: PaylinkConstants.testingPaymentFrameUrl,
+    );
+  }
+
+  /// Production constructor
+  factory PaylinkAPI.production(String apiId, String secretKey) {
+    return PaylinkAPI._internal(
+      apiId: apiId,
+      secretKey: secretKey,
+      apiBaseUrl: PaylinkConstants.productionApiBaseUrl,
+      paymentFrameUrl: PaylinkConstants.productionPaymentFrameUrl,
+    );
+  }
+
+  /// Authenticates with the Paylink API and retrieves an authentication token.
   Future<void> _authenticate() async {
     try {
       final response = await http.post(
-        Uri.parse('$apiLink/api/auth'),
+        Uri.parse('$apiBaseUrl/api/auth'),
         headers: {
           'accept': '*/*',
           'content-type': 'application/json',
         },
         body: json.encode({
-          'apiId': getApiId(apiId, isTestMode),
-          'secretKey': getSecretKey(secretKey, isTestMode),
-          'persistToken': false,
+          'apiId': apiId,
+          'secretKey': secretKey,
+          'persistToken': persistToken,
         }),
       );
 
+      /// Check if the request was successful
       if (response.statusCode != 200) {
-        throw Exception(
-          'Failed to fetch payment token. Status code: ${response.statusCode}',
-        );
+        _handleResponseError(response, 'Failed to authenticate');
       }
 
-      final jsonResponse = json.decode(response.body);
-      final token = jsonResponse['id_token'] as String?;
-      if (token == null) throw Exception('Token not found in the response.');
+      /// Decode the JSON response and extract the token
+      final responseData = json.decode(response.body);
 
-      /// Set the payment token
-      paymentToken = token;
+      /// check if the response contains an id_token
+      if (responseData is! Map<String, dynamic> ||
+          !responseData.containsKey('id_token')) {
+        throw Exception('Authentication token missing in the response.');
+      }
+
+      /// Store the token for future API calls
+      idToken = responseData['id_token'] as String?;
     } catch (e) {
+      /// In case of any exception, clear the token and rethrow the error
+      idToken = null;
       rethrow;
     }
   }
 
-  /// Add invoice to Paylink.
-  ///
-  /// [amount] - The total amount of the invoice. NOTE: Buyer will pay this amount regardless of the total amounts of the products' prices.
-  /// [clientMobile] - The mobile number of the client.
-  /// [clientName] - The name of the client.
-  /// [clientEmail] - The email address of the client.
-  /// [orderNumber] - A unique identifier for the invoice.
-  /// [callBackUrl] - Call back URL that will be called by the Paylink to the merchant system. This callback URL will receive two parameters: orderNumber, and transactionNo.
-  /// [cancelUrl] - Call back URL to cancel orders that will be called by the Paylink to the merchant system. This callback URL will receive two parameters: orderNumber, and transactionNo.
-  /// [currency] - The currency code of the invoice. The default value is SAR. (e.g., USD, EUR, GBP).
-  /// [products] - An array of PaylinkProduct objects to be included in the invoice.
-  /// [note] - A note for the invoice.
-  /// [smsMessage] - This option will enable the invoice to be sent to the client's mobile specified in clientMobile.
-  /// [supportedCardBrands] - List of supported card brands. This list is optional. values are: [mada, visaMastercard, amex, tabby, tamara, stcpay, urpay]
-  /// [displayPending] - This option will make this invoice displayed in my.paylink.sa
-  ///
-  /// Returns a map containing invoice details.
-  Future<Map<String, dynamic>> addInvoice({
+  /// Adds an invoice to the Paylink system.
+  Future<PaylinkInvoice> addInvoice({
     required double amount,
     required String clientMobile,
     required String clientName,
@@ -96,7 +101,7 @@ abstract class PaylinkAPI extends PaylinkHelper {
     required String orderNumber,
     required String callBackUrl,
     String? cancelUrl,
-    String? currency,
+    String? currency = "SAR",
     required List<PaylinkProduct> products,
     String? note,
     String? smsMessage,
@@ -104,10 +109,14 @@ abstract class PaylinkAPI extends PaylinkHelper {
     bool displayPending = true,
   }) async {
     try {
-      if (paymentToken == null) await _authenticate();
+      if (idToken == null) await _authenticate();
 
       /// Filter and sanitize supportedCardBrands
-      List<String> filteredCardBrands = filterCardBrands(supportedCardBrands);
+      if (supportedCardBrands != null && supportedCardBrands.isNotEmpty) {
+        supportedCardBrands = supportedCardBrands
+            .where((brand) => PaylinkConstants.validCardBrands.contains(brand))
+            .toList();
+      }
 
       /// Convert PaylinkProduct objects to maps
       List<Map<String, dynamic>> productsArray = [];
@@ -130,80 +139,72 @@ abstract class PaylinkAPI extends PaylinkHelper {
         'orderNumber': orderNumber,
         'products': productsArray,
         'smsMessage': smsMessage,
-        'supportedCardBrands': filteredCardBrands,
+        'supportedCardBrands': supportedCardBrands,
         'displayPending': displayPending,
       };
 
       final response = await http.post(
-        Uri.parse('$apiLink/api/addInvoice'),
+        Uri.parse('$apiBaseUrl/api/addInvoice'),
         headers: {
           'accept': '*/*',
           'content-type': 'application/json',
-          'Authorization': 'Bearer $paymentToken',
+          'Authorization': 'Bearer $idToken',
         },
         body: jsonEncode(requestBody),
       );
 
       if (response.statusCode != 200) {
-        throw Exception('Failed to add the invoice: ${response.body}');
+        _handleResponseError(response, 'Failed to add the invoice');
       }
 
-      /// Decode the order details
-      Map<String, dynamic> orderDetails = json.decode(response.body);
+      /// Decode the JSON response and extract the order details
+      final orderDetails = json.decode(response.body);
 
-      return orderDetails;
+      if (orderDetails is! Map<String, dynamic>) {
+        throw Exception('Order details missing from the response');
+      }
+
+      return PaylinkInvoice.fromResponseData(orderDetails);
     } catch (e) {
       rethrow;
     }
   }
 
-  /// Retrieves invoice details from the Paylink API.
-  ///
-  /// [transactionNo] - The transaction number for which to retrieve invoice details.
-  ///
-  /// Returns a map containing invoice details.
-  Future<Map<String, dynamic>> getInvoice({String? transactionNo}) async {
+  /// Retrieves invoice details
+  Future<PaylinkInvoice> getInvoice(String transactionNo) async {
     try {
-      if (transactionNo == null) {
-        throw ArgumentError('Transaction number cannot be null.');
-      }
-
-      if (paymentToken == null) await _authenticate();
+      if (idToken == null) await _authenticate();
 
       final response = await http.get(
-        Uri.parse('$apiLink/api/getInvoice/$transactionNo'),
+        Uri.parse('$apiBaseUrl/api/getInvoice/$transactionNo'),
         headers: {
           'accept': '*/*',
           'content-type': 'application/json',
-          'Authorization': 'Bearer $paymentToken',
+          'Authorization': 'Bearer $idToken',
         },
       );
 
       if (response.statusCode != 200) {
-        throw Exception('Failed to load order details: ${response.body}');
+        _handleResponseError(response, 'Failed to get the invoice');
       }
 
-      /// Decode the order details
-      Map<String, dynamic> orderDetails = json.decode(response.body);
+      /// Decode the JSON response and extract the order details
+      final orderDetails = json.decode(response.body);
 
-      return orderDetails;
+      if (orderDetails is! Map<String, dynamic>) {
+        throw Exception('Order details missing from the response');
+      }
+
+      return PaylinkInvoice.fromResponseData(orderDetails);
     } catch (e) {
       rethrow;
     }
   }
 
-  /// Cancel invoice from Paylink.
-  ///
-  /// [transactionNo] - The transaction number of the invoice to cancel.
-  ///
-  /// Returns boolean
-  Future<void> cancelInvoice({String? transactionNo}) async {
+  /// Cancels an existing invoice.
+  Future<bool> cancelInvoice(String transactionNo) async {
     try {
-      if (transactionNo == null) {
-        throw ArgumentError('Transaction number cannot be null.');
-      }
-
-      if (paymentToken == null) await _authenticate();
+      if (idToken == null) await _authenticate();
 
       /// Request body parameters
       Map<String, dynamic> requestBody = {
@@ -211,26 +212,57 @@ abstract class PaylinkAPI extends PaylinkHelper {
       };
 
       final response = await http.post(
-        Uri.parse('$apiLink/api/cancelInvoice'),
+        Uri.parse('$apiBaseUrl/api/cancelInvoice'),
         headers: {
           'accept': '*/*',
           'content-type': 'application/json',
-          'Authorization': 'Bearer $paymentToken',
+          'Authorization': 'Bearer $idToken',
         },
         body: jsonEncode(requestBody),
       );
 
       if (response.statusCode != 200) {
-        throw Exception('Failed to cancel the invoice: ${response.body}');
+        _handleResponseError(response, 'Failed to cancel the invoice');
       }
 
-      Map<String, dynamic> responseBody = json.decode(response.body);
+      /// Decode the JSON response and extract the token
+      final responseData = json.decode(response.body);
 
-      if (responseBody.isEmpty || responseBody['success'] != 'true') {
-        throw Exception('Failed to cancel the invoice: ${response.body}');
+      /// check if the response contains an id_token
+      if (responseData is! Map<String, dynamic> ||
+          !responseData.containsKey('success')) {
+        throw Exception('Failed to cancel the invoice');
       }
+
+      return responseData['success'] == 'true';
     } catch (e) {
       rethrow;
     }
+  }
+
+  /// Handles HTTP response errors
+  void _handleResponseError(http.Response response, String defaultErrorMsg) {
+    // Try to extract error details from the response body
+    Map<String, dynamic> responseData;
+
+    try {
+      responseData = json.decode(response.body);
+    } catch (e) {
+      responseData = {};
+    }
+
+    String errorMsg = responseData['detail'] ??
+        responseData['title'] ??
+        responseData['error'] ??
+        response.body;
+
+    if (errorMsg.isEmpty) {
+      errorMsg = defaultErrorMsg;
+    }
+
+    // Include the status code in the error message for debugging purposes
+    errorMsg += ", Status code: ${response.statusCode}";
+
+    throw Exception(errorMsg);
   }
 }

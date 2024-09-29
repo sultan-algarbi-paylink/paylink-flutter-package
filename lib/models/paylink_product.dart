@@ -31,4 +31,17 @@ class PaylinkProduct {
       'productCost': productCost,
     };
   }
+
+  factory PaylinkProduct.fromMap(Map<String, dynamic> map) {
+    return PaylinkProduct(
+      title: map['title'] ?? '',
+      price: map['price'] ?? 0.0,
+      qty: map['qty'] ?? 0,
+      description: map['description'],
+      isDigital: map['isDigital'] ?? false,
+      imageSrc: map['imageSrc'],
+      specificVat: map['specificVat'],
+      productCost: map['productCost'],
+    );
+  }
 }

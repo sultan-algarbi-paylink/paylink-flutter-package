@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:paylink_payment_example/widgets/invoice_attribute.dart';
+import 'package:paylink_payment/paylink_payment.dart';
 
 class InvoiceScreen extends StatefulWidget {
   const InvoiceScreen({
@@ -9,7 +10,7 @@ class InvoiceScreen extends StatefulWidget {
     this.errorMsg,
   });
 
-  final Map<String, dynamic>? invoiceDetails;
+  final PaylinkInvoice? invoiceDetails;
   final String? typeMsg, errorMsg;
 
   @override
@@ -51,15 +52,20 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
 
             /// --- Invoice Content
             if (widget.invoiceDetails != null)
-              for (String attribute in [
-                'transactionNo',
-                'amount',
-                'orderStatus'
-              ])
-                InvoiceAttribute(
-                  attribute: attribute,
-                  value: widget.invoiceDetails![attribute].toString(),
-                ),
+              InvoiceAttribute(
+                attribute: 'transactionNo',
+                value: widget.invoiceDetails!.transactionNo.toString(),
+              ),
+            if (widget.invoiceDetails != null)
+              InvoiceAttribute(
+                attribute: 'amount',
+                value: widget.invoiceDetails!.amount.toString(),
+              ),
+            if (widget.invoiceDetails != null)
+              InvoiceAttribute(
+                attribute: 'orderStatus',
+                value: widget.invoiceDetails!.orderStatus.toString(),
+              ),
           ],
         ),
       ),

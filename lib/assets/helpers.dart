@@ -1,50 +1,19 @@
-import 'package:paylink_payment/assets/constants.dart';
-
-abstract class PaylinkHelper {
-  /// API endpoints for production and test environments.
-  late String paymentFrameUrl;
-
-  String getApiLink(bool isTesting) {
-    return isTesting
-        ? PaylinkConstants.testApiLink
-        : PaylinkConstants.productionApiLink;
-  }
-
-  String getPaymentFrameUrl(bool isTesting) {
-    return isTesting
-        ? PaylinkConstants.testingPaymentFrameUrl
-        : PaylinkConstants.productionPaymentFrameUrl;
-  }
-
-  String? getApiId(String? productionApiId, bool isTesting) {
-    return isTesting ? PaylinkConstants.testingApiId : productionApiId;
-  }
-
-  String? getSecretKey(String? productionSecretKey, bool isTesting) {
-    return isTesting ? PaylinkConstants.testingSecretKey : productionSecretKey;
-  }
-
-  List<String> filterCardBrands(List<String>? supportedCardBrands) {
-    return supportedCardBrands == null
-        ? PaylinkConstants.validCardBrands
-        : supportedCardBrands
-            .where((brand) => PaylinkConstants.validCardBrands.contains(brand))
-            .toList();
-  }
-
+class PaylinkHelper {
   /// Generates the payment page URL for a transaction.
+  /// [paymentFrameUrl] - The URL of the payment frame.
   /// [transactionNo] - The transaction number for which to generate the payment URL.
   /// [clientName] - The name of the client making the payment.
   /// [clientMobile] - The mobile number of the client making the payment.
   /// Returns the payment page URL.
-  String getPaymentPageUrl(
-    String? transactionNo,
-    String? clientName,
-    String? clientMobile,
+  static String getPaymentPageUrl(
+    String paymentFrameUrl,
+    String transactionNo,
+    String clientName,
+    String clientMobile,
   ) {
     // Encode the strings to make it safe for literal use as a URI component.
-    clientName = Uri.encodeComponent(clientName ?? '');
-    clientMobile = Uri.encodeComponent(clientMobile ?? '');
+    clientName = Uri.encodeComponent(clientName);
+    clientMobile = Uri.encodeComponent(clientMobile);
 
     return '$paymentFrameUrl/$transactionNo?n=$clientName&m=$clientMobile';
   }
@@ -52,7 +21,7 @@ abstract class PaylinkHelper {
   /// Converts payment error data to a map format.
   /// [data] - The payment error data to be converted.
   /// Returns a map containing the converted payment errors.
-  Map<String, dynamic> paymentErrorsToMap(data) {
+  static Map<String, dynamic> paymentErrorsToMap(data) {
     if (data == null) return {};
 
     // Check if data is actually a list
