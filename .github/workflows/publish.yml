@@ -11,3 +11,14 @@ jobs:
     permissions:
       id-token: write # Required for authentication using OIDC
     uses: dart-lang/setup-dart/.github/workflows/publish.yml@v1
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.5.3'  # Specify your Flutter version
+
+      - name: Get dependencies
+        run: flutter pub get  # Use flutter pub instead of dart pub
