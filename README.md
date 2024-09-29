@@ -24,7 +24,7 @@ To integrate Paylink's payment gateway into your Flutter application using the `
 
     ```yaml
     dependencies:
-      paylink_payment: ^1.0.4 # Use the latest version
+      paylink_payment: ^2.0.0 # Use the latest version
     ```
 
 2.  **Import the Package**:
@@ -37,19 +37,27 @@ To integrate Paylink's payment gateway into your Flutter application using the `
 
 3.  **Initialize Paylink instance**
 
-    ```dart
-    paylink = PaylinkPayment(
-      context: context,
-      isTestMode: true,
-      apiId: null, // required for production environment
-      secretKey: null, // required for production environment
-      webViewTitle: 'Payment Screen', // optional
-      textColor: Colors.white, // optional
-      themeColor: Colors.blue, // optional
-    )
-    ```
+- For Testing
+  ```dart
+  paylink = PaylinkPayment.test(
+    context: context,
+    webViewTitle: 'Payment Screen', // optional
+    textColor: Colors.white, // optional
+    themeColor: Colors.blue, // optional
+  )
+  ```
+- For Production
 
-    - Replace the placeholders (`apiId`, `secretKey`, etc.) with actual values required for the production environment.
+  ```dart
+  paylink = PaylinkPayment.production(
+    context: context,
+    apiId: '**************',
+    secretKey: '**************',
+    webViewTitle: 'Payment Screen', // optional
+    textColor: Colors.white, // optional
+    themeColor: Colors.blue, // optional
+  )
+  ```
 
 ## Package Functionalities
 
@@ -61,7 +69,7 @@ Use the `PaylinkPayment` class to open the payment form when a button or action 
 // paylink instance initialized in previous step
 paylink.openPaymentForm(
   transactionNo: '1713690519134',
-  onPaymentComplete: (Map<String, dynamic> orderDetails) {
+  onPaymentComplete: (PaylinkInvoice orderDetails) {
     /// Handle payment completion
   },
   onError: (Object error) {
@@ -93,7 +101,7 @@ paylink.addInvoice(
   smsMessage: 'URL: [SHORT_URL], Amount: [AMOUNT]',
   supportedCardBrands: ['mada', 'visaMastercard', 'amex', 'tabby', 'tamara', 'stcpay', 'urpay'],
 )
-.then((orderDetails) {
+.then((PaylinkInvoice orderDetails) {
   /// Handle success response
 })
 .onError((error, stackTrace) {
@@ -104,10 +112,8 @@ paylink.addInvoice(
 ### 3. **Retrieve Invoice Details**:
 
 ```dart
-paylink.getInvoice(
-  transactionNo: '1713690519134'
-)
-.then((orderDetails) {
+paylink.getInvoice('1713690519134')
+.then((PaylinkInvoice orderDetails) {
   /// Handle success response
 })
 .onError((error, stackTrace) {
@@ -118,10 +124,8 @@ paylink.getInvoice(
 ### 4. **Cancel Invoice**:
 
 ```dart
-paylink.cancelInvoice(
-  transactionNo: '1713690519134'
-)
-.then((_) {
+paylink.cancelInvoice('1713690519134')
+.then((bool result) {
   /// Handle success response
 })
 .onError((error, stackTrace) {

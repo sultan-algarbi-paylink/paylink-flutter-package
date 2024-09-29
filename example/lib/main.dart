@@ -140,10 +140,11 @@ class _MyHomePageState extends State<MyHomePage> {
 
   /// --- 5. Paylink: Cancel Invoice
   void cancelInvoice(String transactionNo) {
-    paylink
-        .cancelInvoice(transactionNo)
-        .then((_) => setCancelResponse('Canceled Successfully'))
-        .onError((error, stackTrace) => setCancelResponse(error.toString()));
+    paylink.cancelInvoice(transactionNo).then((bool result) {
+      setCancelResponse(result ? 'Canceled Successfully' : 'Failed to cancel');
+    }).onError((error, stackTrace) {
+      setCancelResponse(error.toString());
+    });
   }
 
   @override
