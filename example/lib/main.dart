@@ -51,15 +51,20 @@ class _MyHomePageState extends State<MyHomePage> {
 
   /// --- 1. Paylink: Initialize Paylink instance
   void paylinkInitialize() {
-    paylink = PaylinkPayment(
+    paylink = PaylinkPayment.test(
       context: context,
-      isTestMode: true,
-      apiId: null, // required for production environment
-      secretKey: null, // required for production environment
       webViewTitle: 'Payment Screen', // optional
       textColor: Colors.white, // optional
       themeColor: Colors.blue, // optional
     );
+    // paylink = PaylinkPayment.production(
+    //   context: context,
+    //   apiId: 'api_id_xxxx',
+    //   secretKey: 'secret_key_xxxxxxxxxxxxxxxx',
+    //   webViewTitle: 'Payment Screen', // optional
+    //   textColor: Colors.white, // optional
+    //   themeColor: Colors.blue, // optional
+    // );
   }
 
   /// --- 2. Paylink: Add Invoice Function
@@ -103,7 +108,7 @@ class _MyHomePageState extends State<MyHomePage> {
   /// --- 3. Paylink: Get Invoice Function
   void getInvoice(String transactionNo) {
     paylink
-        .getInvoice(transactionNo: transactionNo)
+        .getInvoice(transactionNo)
         .then(
           (orderDetails) => navigateToInvoiceScreen(
             typeMsg: '[Get Invoice] API Result',
@@ -136,7 +141,7 @@ class _MyHomePageState extends State<MyHomePage> {
   /// --- 5. Paylink: Cancel Invoice
   void cancelInvoice(String transactionNo) {
     paylink
-        .cancelInvoice(transactionNo: transactionNo)
+        .cancelInvoice(transactionNo)
         .then((_) => setCancelResponse('Canceled Successfully'))
         .onError((error, stackTrace) => setCancelResponse(error.toString()));
   }
@@ -169,7 +174,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   /// Example function: not related to paylink package
   void navigateToInvoiceScreen({
-    Map<String, dynamic>? invoiceDetails,
+    PaylinkInvoice? invoiceDetails,
     String? typeMsg,
     String? errorMsg,
   }) {
