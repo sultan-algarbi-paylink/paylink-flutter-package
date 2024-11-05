@@ -1,3 +1,12 @@
+## 2.0.1
+
+**Fixed**
+
+- Updated `PaylinkGatewayOrderRequest.fromMap` constructor to handle flexible casting for the `products` list.
+  - Previously, `data['products']` expected a `List<Map<String, dynamic>>` type, which caused runtime errors when provided with a generic `List<dynamic>`.
+  - Modified the casting to use `List<dynamic>` and added explicit casting of each element to `Map<String, dynamic>` within the `map` function.
+  - This change ensures compatibility with varied list types and prevents runtime errors related to type mismatches.
+
 ## 2.0.0
 
 - **Improved Authentication Workflow**

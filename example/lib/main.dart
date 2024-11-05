@@ -96,7 +96,9 @@ class _MyHomePageState extends State<MyHomePage> {
             'urpay'
           ],
         )
-        .then((orderDetails) => addInvoiceToList(orderDetails, true))
+        .then(
+          (PaylinkInvoice orderDetails) => addInvoiceToList(orderDetails, true),
+        )
         .onError(
           (error, stackTrace) => navigateToInvoiceScreen(
             typeMsg: '[Add Invoice] API Error Response',
@@ -110,7 +112,7 @@ class _MyHomePageState extends State<MyHomePage> {
     paylink
         .getInvoice(transactionNo)
         .then(
-          (orderDetails) => navigateToInvoiceScreen(
+          (PaylinkInvoice orderDetails) => navigateToInvoiceScreen(
             typeMsg: '[Get Invoice] API Result',
             invoiceDetails: orderDetails,
           ),
@@ -127,7 +129,8 @@ class _MyHomePageState extends State<MyHomePage> {
   void checkout(String transactionNo) {
     paylink.openPaymentForm(
       transactionNo: transactionNo,
-      onPaymentComplete: (orderDetails) => navigateToInvoiceScreen(
+      onPaymentComplete: (PaylinkInvoice orderDetails) =>
+          navigateToInvoiceScreen(
         typeMsg: '[Checkout Invoice] API Result',
         invoiceDetails: orderDetails,
       ),
@@ -206,17 +209,18 @@ class _MyHomePageState extends State<MyHomePage> {
       callBackUrl: 'https://example.com',
       products: [],
     ).then(
-      (invoiceDetails) => addInvoiceToList(invoiceDetails, false),
+      (PaylinkInvoice invoiceDetails) =>
+          addInvoiceToList(invoiceDetails, false),
     );
   }
 
   /// Example function: not related to paylink package
-  void addInvoiceToList(invoiceDetails, bool withNavigate) {
+  void addInvoiceToList(PaylinkInvoice invoiceDetails, bool withNavigate) {
     setState(() {
       invoiceList.add(
         {
-          'label': '${invoiceDetails['orderStatus']} Invoice',
-          'transactionNo': invoiceDetails['transactionNo'],
+          'label': '${invoiceDetails.orderStatus} Invoice',
+          'transactionNo': invoiceDetails.transactionNo,
         },
       );
     });

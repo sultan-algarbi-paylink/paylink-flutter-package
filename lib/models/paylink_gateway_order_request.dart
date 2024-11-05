@@ -38,11 +38,11 @@ class PaylinkGatewayOrderRequest {
   });
 
   factory PaylinkGatewayOrderRequest.fromMap(Map<String, dynamic> data) {
-    List<PaylinkProduct> products =
-        (data['products'] as List<Map<String, dynamic>>?)
-                ?.map((product) => PaylinkProduct.fromMap(product))
-                .toList() ??
-            [];
+    List<PaylinkProduct> products = (data['products'] as List<dynamic>?)
+            ?.map((product) =>
+                PaylinkProduct.fromMap(product as Map<String, dynamic>))
+            .toList() ??
+        [];
 
     return PaylinkGatewayOrderRequest(
       amount: data['amount'] ?? 0.0,
