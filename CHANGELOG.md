@@ -1,3 +1,8 @@
+## 2.0.2
+
+- Removed `late` keyword from `idToken` to resolve initialization issues.
+- Added a check for empty responses to handle cases where response.body is empty
+
 ## 2.0.1
 
 **Fixed**

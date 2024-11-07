@@ -14,7 +14,7 @@ class PaylinkAPI {
   final bool persistToken = false;
   final String apiBaseUrl;
   final String paymentFrameUrl;
-  late String? idToken;
+  String? idToken;
 
   PaylinkAPI({
     required this.apiId,
@@ -72,6 +72,10 @@ class PaylinkAPI {
       /// Check if the request was successful
       if (response.statusCode != 200) {
         _handleResponseError(response, 'Failed to authenticate');
+      }
+
+      if (response.body.isEmpty) {
+        throw Exception('Authentication token missing in the response.');
       }
 
       /// Decode the JSON response and extract the token
@@ -157,6 +161,10 @@ class PaylinkAPI {
         _handleResponseError(response, 'Failed to add the invoice');
       }
 
+      if (response.body.isEmpty) {
+        throw Exception('Order details missing from the response');
+      }
+
       /// Decode the JSON response and extract the order details
       final orderDetails = json.decode(response.body);
 
@@ -186,6 +194,10 @@ class PaylinkAPI {
 
       if (response.statusCode != 200) {
         _handleResponseError(response, 'Failed to get the invoice');
+      }
+
+      if (response.body.isEmpty) {
+        throw Exception('Order details missing from the response');
       }
 
       /// Decode the JSON response and extract the order details
@@ -223,6 +235,10 @@ class PaylinkAPI {
 
       if (response.statusCode != 200) {
         _handleResponseError(response, 'Failed to cancel the invoice');
+      }
+
+      if (response.body.isEmpty) {
+        throw Exception('Failed to cancel the invoice');
       }
 
       /// Decode the JSON response and extract the token
